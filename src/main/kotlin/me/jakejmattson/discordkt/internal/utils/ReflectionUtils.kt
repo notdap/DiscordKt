@@ -1,15 +1,10 @@
 package me.jakejmattson.discordkt.internal.utils
 
 import me.jakejmattson.discordkt.Discord
-import me.jakejmattson.discordkt.commands.CommandSet
-import me.jakejmattson.discordkt.commands.SubCommandSet
 import me.jakejmattson.discordkt.dsl.Listeners
-import me.jakejmattson.discordkt.dsl.Precondition
 import me.jakejmattson.discordkt.dsl.diService
 import org.reflections.Reflections
-import org.reflections.scanners.Scanners.MethodsReturn
-import org.reflections.scanners.Scanners.SubTypes
-import org.reflections.scanners.Scanners.TypesAnnotated
+import org.reflections.scanners.Scanners.*
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import kotlin.reflect.KClass
@@ -24,10 +19,7 @@ internal class ReflectionUtils(path: String) {
     private val reflections = Reflections(path, SubTypes, TypesAnnotated, MethodsReturn)
 
     fun registerFunctions(discord: Discord) {
-        register<CommandSet>(discord)
-        register<SubCommandSet>(discord)
         register<Listeners>(discord)
-        register<Precondition>(discord)
     }
 
     private inline fun <reified T : BuilderRegister> register(discord: Discord) = reflections

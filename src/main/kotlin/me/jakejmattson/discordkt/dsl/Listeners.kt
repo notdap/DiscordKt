@@ -34,14 +34,11 @@ public data class ListenerBuilder(val discord: Discord) {
         val requiredIntents = intentsOf<T>()
         val intentNames = requiredIntents.values.joinToString { it::class.simpleName!! }
 
-        if (requiredIntents !in discord.configuration.intents)
-            InternalLogger.error("${T::class.simplerName} missing intent: $intentNames")
-
         discord.kord.on<T> {
             try {
                 listener(this)
             } catch (e: Exception) {
-                discord.configuration.exceptionHandler.invoke(ListenerException(e, this))
+                e.printStackTrace()
             }
         }
     }
