@@ -27,7 +27,7 @@ public val UserBehavior.profileLink: String
  * A link to this user's profile picture.
  */
 public val User.pfpUrl: String
-    get() = avatar?.url ?: defaultAvatar.url
+    get() = avatar?.cdnUrl?.toUrl() ?: defaultAvatar.cdnUrl.toUrl()
 
 /**
  * A User's name and discriminator

@@ -11,9 +11,9 @@ import dev.kord.core.entity.Message
 import dev.kord.core.entity.ReactionEmoji
 import dev.kord.core.entity.interaction.ButtonInteraction
 import dev.kord.core.entity.interaction.ComponentInteraction
+import dev.kord.rest.builder.component.ActionRowBuilder
 import dev.kord.rest.builder.message.EmbedBuilder
-import dev.kord.rest.builder.message.create.actionRow
-import dev.kord.rest.builder.message.modify.actionRow
+import dev.kord.rest.builder.message.actionRow
 import dev.kord.x.emoji.DiscordEmoji
 import dev.kord.x.emoji.toReaction
 import me.jakejmattson.discordkt.extensions.toPartialEmoji
@@ -32,21 +32,21 @@ public suspend fun Message.edit(menu: Menu): Message {
         embeds = mutableListOf(menu.page)
 
         menu.buttons.forEach {
-            actionRow {
+            actionRow(fun ActionRowBuilder.() {
                 it.forEach { button ->
                     when (button) {
                         is SimpleButton<*> -> interactionButton(button.style, button.id) {
-                            this.label = button.label
-                            this.emoji = button.emoji?.toPartialEmoji()
+                            label = button.label
+                            emoji = button.emoji?.toPartialEmoji()
                         }
 
                         is LinkButton -> linkButton(button.url) {
-                            this.label = button.label
-                            this.emoji = button.emoji?.toPartialEmoji()
+                            label = button.label
+                            emoji = button.emoji?.toPartialEmoji()
                         }
                     }
                 }
-            }
+            })
         }
     }
 
@@ -69,7 +69,13 @@ public class MenuButtonRowBuilder {
      * @param style The Button [style][ButtonStyle]
      * @param disabled Whether this button is disabled
      */
-    public fun button(label: String?, emoji: DiscordEmoji?, style: ButtonStyle = ButtonStyle.Secondary, disabled: Boolean = false, action: suspend Menu.() -> Unit) {
+    public fun button(
+        label: String?,
+        emoji: DiscordEmoji?,
+        style: ButtonStyle = ButtonStyle.Secondary,
+        disabled: Boolean = false,
+        action: suspend Menu.() -> Unit
+    ) {
         val button = SimpleButton(label, emoji?.toReaction(), disabled, uuid(), Nav(action), style)
         buttons.add(button)
     }
@@ -83,7 +89,13 @@ public class MenuButtonRowBuilder {
      * @param style The Button [style][ButtonStyle]
      * @param disabled Whether this button is disabled
      */
-    public fun editButton(label: String?, emoji: DiscordEmoji?, style: ButtonStyle = ButtonStyle.Secondary, disabled: Boolean = false, action: suspend EmbedBuilder.() -> Unit) {
+    public fun editButton(
+        label: String?,
+        emoji: DiscordEmoji?,
+        style: ButtonStyle = ButtonStyle.Secondary,
+        disabled: Boolean = false,
+        action: suspend EmbedBuilder.() -> Unit
+    ) {
         val button = SimpleButton(label, emoji?.toReaction(), disabled, uuid(), Edit(action), style)
         buttons.add(button)
     }
@@ -97,7 +109,13 @@ public class MenuButtonRowBuilder {
      * @param style The Button [style][ButtonStyle]
      * @param disabled Whether this button is disabled
      */
-    public fun actionButton(label: String?, emoji: DiscordEmoji?, style: ButtonStyle = ButtonStyle.Secondary, disabled: Boolean = false, action: suspend ComponentInteraction.() -> Unit) {
+    public fun actionButton(
+        label: String?,
+        emoji: DiscordEmoji?,
+        style: ButtonStyle = ButtonStyle.Secondary,
+        disabled: Boolean = false,
+        action: suspend ComponentInteraction.() -> Unit
+    ) {
         val button = SimpleButton(label, emoji?.toReaction(), disabled, uuid(), Action(action), style)
         buttons.add(button)
     }
@@ -158,8 +176,10 @@ public suspend fun menu(menuBuilder: suspend MenuBuilder.() -> Unit): Menu {
 /**
  * Contains menu data and navigation functions.
  */
-public data class Menu(internal val pages: MutableList<EmbedBuilder>,
-                       internal val buttons: MutableList<MutableList<DktButton>>) {
+public data class Menu(
+    internal val pages: MutableList<EmbedBuilder>,
+    internal val buttons: MutableList<MutableList<DktButton>>
+) {
     private var index = 0
 
     internal val page: EmbedBuilder
@@ -208,7 +228,7 @@ public data class Menu(internal val pages: MutableList<EmbedBuilder>,
         require(pages.isNotEmpty()) { "A menu must have at least one page." }
 
         val message = channel.createMessage {
-            embeds.add(pages.first())
+            embeds?.add(pages.first())
 
             buttons.forEach {
                 actionRow {
@@ -302,7 +322,9 @@ private sealed class ButtonAction<T> {
     }
 }
 
-private class Action(override val action: suspend ComponentInteraction.() -> Unit) : ButtonAction<ComponentInteraction>()
+private class Action(override val action: suspend ComponentInteraction.() -> Unit) :
+    ButtonAction<ComponentInteraction>()
+
 private class Edit(override val action: suspend EmbedBuilder.() -> Unit) : ButtonAction<EmbedBuilder>()
 private class Nav(override val action: suspend Menu.() -> Unit) : ButtonAction<Menu>()
 
